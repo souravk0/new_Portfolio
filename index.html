@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<!--
+DESIGN CONCEPT: "THE CAPTURE"
+Sourav is a cybersecurity fresher whose strongest proof is hands-on work: three police cyber internships, Python security tools and CTF wins. So the whole site is a live security console.
+- Navigation is a rail of "open ports" (22 whoami, 80 capture, 443 toolkit...).
+- The hero is a terminal session plus a live traffic ticker.
+- SIGNATURE ELEMENT: projects, wins and certificates are packets in a Wireshark-style capture. Filter them, click one, and inspect its frame details and a real hex dump of its payload.
+- Skills are an Nmap-style scan of "hosts" that you can re-run.
+- Experience is a set of tabbed case files.
+- Contact is a terminal mail prompt.
+Type: Space Grotesk (headlines/body) + JetBrains Mono (console). Palette: phosphor green, amber alerts, cyan packets on near-black.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sourav | Cybersecurity, Security Analyst Intern candidate</title>
+<meta name="description" content="Portfolio of Sourav: B.Tech CSE student with three cyber police internships, Python security tools and CTF wins. Vulnerability assessment, web security testing and network analysis.">
+<meta name="theme-color" content="#070b0a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b0a; --panel:#0d1513; --panel2:#0a110f; --line:#1b2a25;
+  --fg:#d9e8df; --mute:#8fa699; --g:#5dffa0; --a:#ffb347; --c:#62d8ff; --v:#c792ff; --r:#ff6b6b;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:'Space Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --rail:232px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:1rem;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:48px 48px;opacity:.22;
+  -webkit-mask-image:radial-gradient(ellipse at 70% 10%,#000 0,transparent 70%);mask-image:radial-gradient(ellipse at 70% 10%,#000 0,transparent 70%)}
+body::after{content:"";position:fixed;inset:0;z-index:50;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px)}
+a{color:inherit}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:fixed;left:.75rem;top:-4rem;z-index:100;background:var(--g);color:#04100a;padding:.5rem .8rem;font-family:var(--mono);font-size:.8rem;border-radius:4px;text-decoration:none}
+.skip:focus{top:.75rem}
+.mono{font-family:var(--mono)}
+
+/* ===== rail ===== */
+.rail{position:fixed;left:0;top:0;bottom:0;width:var(--rail);z-index:20;display:flex;flex-direction:column;
+  padding:1.5rem 1rem;border-right:1px solid var(--line);background:rgba(7,11,10,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.brand{font:700 .85rem var(--mono);color:var(--g);text-decoration:none;letter-spacing:.02em;padding:0 .6rem}
+.brand i{display:inline-block;width:.55em;height:1em;background:var(--g);vertical-align:-.15em;margin-left:.2em;animation:blink 1.1s steps(1) infinite}
+.rail p.cap{font:500 .65rem var(--mono);color:var(--mute);letter-spacing:.14em;text-transform:uppercase;margin:2rem .6rem .5rem}
+.rail ul{list-style:none;display:flex;flex-direction:column;gap:2px}
+.rail li a{display:flex;gap:.7rem;align-items:baseline;padding:.55rem .6rem;border-left:2px solid transparent;font:500 .8rem var(--mono);color:var(--mute);text-decoration:none;transition:color .2s,background .2s,border-color .2s}
+.rail li a .p{color:var(--a);min-width:2.6ch;text-align:right}
+.rail li a:hover{color:var(--fg);background:rgba(255,255,255,.03)}
+.rail li a[aria-current="true"]{color:var(--fg);border-color:var(--g);background:rgba(93,255,160,.07)}
+.session{margin-top:auto;padding:.8rem .6rem 0;border-top:1px solid var(--line);font:400 .7rem/1.7 var(--mono);color:var(--mute)}
+.session b{color:var(--g);font-weight:500}
+
+main{position:relative;z-index:1;margin-left:var(--rail);padding:0 clamp(1.25rem,4vw,4rem)}
+section{max-width:1040px;padding-block:clamp(3.5rem,8vw,6.5rem);border-bottom:1px dashed var(--line)}
+section:last-of-type{border-bottom:0}
+.sec-head{margin-bottom:2rem}
+.sec-head .idx{display:inline-block;font:500 .75rem var(--mono);color:var(--a);letter-spacing:.08em;margin-bottom:.7rem}
+.sec-head .idx::before{content:"[ ";color:var(--mute)}.sec-head .idx::after{content:" ]";color:var(--mute)}
+h2{font:700 clamp(1.8rem,4.2vw,3rem)/1.05 var(--sans);letter-spacing:-.03em}
+.sec-head p{color:var(--mute);max-width:58ch;margin-top:.8rem}
+
+/* ===== hero ===== */
+.hero{padding-top:clamp(5rem,10vw,8rem)}
+.kicker{font:500 .8rem var(--mono);color:var(--g);letter-spacing:.04em;margin-bottom:1.2rem}
+h1{font:700 clamp(3.6rem,13vw,9.2rem)/.88 var(--sans);letter-spacing:-.055em;animation:flick 1.4s .2s both}
+h1 span{color:var(--g)}
+.lede{font-size:clamp(1.15rem,2.2vw,1.55rem);line-height:1.35;max-width:30ch;margin:1.4rem 0 2rem;color:var(--fg);letter-spacing:-.01em}
+.lede em{font-style:normal;color:var(--g)}
+.term{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.term-bar{display:flex;align-items:center;gap:.4rem;padding:.55rem .8rem;border-bottom:1px solid var(--line);background:var(--panel2);font:400 .7rem var(--mono);color:var(--mute)}
+.term-bar i{width:.6rem;height:.6rem;border-radius:50%;background:var(--line)}
+.term-bar i:nth-child(1){background:#ff5f57}.term-bar i:nth-child(2){background:#febc2e}.term-bar i:nth-child(3){background:#28c840}
+.term-bar span{margin-left:.5rem}
+.term-body{padding:1.1rem 1.1rem 1.2rem;font:400 .86rem/1.75 var(--mono);min-height:15.5rem}
+.term-body p{margin:0}
+.term-body .prompt{color:var(--g);user-select:none}
+.term-body .cmd{color:var(--fg);font-weight:500}
+.term-body .out{color:var(--mute);display:block;margin:.1rem 0 .7rem;padding-left:0}
+.term-body .out b{color:var(--a);font-weight:500}
+.typing::after,.caret{display:inline-block;width:.55em;height:1.05em;background:var(--g);vertical-align:-.2em;margin-left:2px;animation:blink 1s steps(1) infinite}
+.caret{margin-left:.3em}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:1.5rem}
+.stat{background:var(--bg);padding:1.1rem 1.1rem 1.2rem;display:flex;flex-direction:column-reverse;gap:.4rem;justify-content:flex-end}
+.stat dd{font:700 clamp(2rem,4vw,2.8rem)/1 var(--sans);color:var(--g);letter-spacing:-.04em}
+.stat dt{font:500 .68rem/1.4 var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.09em}
+.cta{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.8rem}
+.btn{display:inline-flex;align-items:center;gap:.6rem;font:500 .82rem var(--mono);padding:.8rem 1.15rem;border:1px solid var(--g);color:var(--g);text-decoration:none;background:transparent;border-radius:6px;cursor:pointer;transition:background .2s,color .2s,transform .2s}
+.btn:hover{background:var(--g);color:#04100a}
+.btn.solid{background:var(--g);color:#04100a}
+.btn.solid:hover{background:transparent;color:var(--g)}
+.btn.small{padding:.45rem .75rem;font-size:.72rem}
+.ticker{overflow:hidden;border-block:1px solid var(--line);margin-top:2.6rem;padding:.65rem 0;font:400 .74rem var(--mono);color:var(--mute);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.track{display:inline-flex;white-space:nowrap;animation:slide 48s linear infinite;will-change:transform}
+.track span{padding-right:2.4rem}
+.track b{font-weight:500}.t-g{color:var(--g)}.t-a{color:var(--a)}.t-c{color:var(--c)}.t-r{color:var(--r)}
+
+/* ===== capture ===== */
+.wire{border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+.toolbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;padding:.75rem;border-bottom:1px solid var(--line);background:var(--panel2)}
+.toolbar input{flex:1 1 230px;min-width:0;background:#060c0a;border:1px solid var(--line);border-radius:6px;padding:.55rem .75rem;font:400 .8rem var(--mono);color:var(--g)}
+.toolbar input::placeholder{color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chips button{font:500 .7rem var(--mono);padding:.42rem .65rem;border:1px solid var(--line);background:transparent;color:var(--mute);border-radius:999px;cursor:pointer;transition:all .2s}
+.chips button:hover{color:var(--fg);border-color:var(--mute)}
+.chips button[aria-pressed="true"]{color:#04100a;background:var(--g);border-color:var(--g)}
+.cols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+.pwrap{border-right:1px solid var(--line);min-width:0}
+.phead{display:grid;grid-template-columns:2.2rem 5.4rem 1fr;gap:.6rem;padding:.5rem .75rem;border-bottom:1px solid var(--line);font:500 .66rem var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.1em;background:var(--panel2)}
+.plist{list-style:none;max-height:540px;overflow:auto}
+.plist li{border-bottom:1px solid var(--line)}
+.row{width:100%;display:grid;grid-template-columns:2.2rem 5.4rem 1fr;gap:.6rem;align-items:start;text-align:left;padding:.7rem .75rem;border:0;background:transparent;cursor:pointer;font:400 .78rem/1.45 var(--mono);transition:background .15s}
+.row:hover{background:rgba(255,255,255,.04)}
+.row[aria-pressed="true"]{background:rgba(98,216,255,.1);box-shadow:inset 3px 0 var(--g)}
+.row:focus-visible{outline-offset:-2px}
+.row .no{color:var(--mute)}
+.row .lay{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-align:center;padding:.2rem .3rem;border-radius:3px;color:#05100b;background:var(--c)}
+.row[data-g="win"] .lay{background:var(--g)}
+.row[data-g="cert"] .lay{background:var(--a)}
+.row[data-g="community"] .lay{background:var(--v)}
+.row .info strong{display:block;font-weight:500;color:var(--fg);font-family:var(--sans);font-size:.92rem;line-height:1.3}
+.row .info small{display:block;color:var(--mute);font-size:.7rem;margin-top:.15rem}
+.empty{padding:1.5rem;font:400 .8rem var(--mono);color:var(--mute)}
+.count{padding:.5rem .75rem;border-top:1px solid var(--line);font:400 .7rem var(--mono);color:var(--mute);background:var(--panel2)}
+.inspector{padding:1.1rem 1.2rem 1.4rem;min-width:0;font:400 .8rem/1.6 var(--mono)}
+.ins-k{color:var(--a);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase}
+.inspector h3{font:700 1.3rem/1.2 var(--sans);letter-spacing:-.02em;margin:.35rem 0 1rem;color:var(--fg)}
+.inspector details{border-top:1px solid var(--line);padding:.55rem 0}
+.inspector summary{cursor:pointer;color:var(--c);font-weight:500;list-style:none}
+.inspector summary::before{content:"▸ ";color:var(--mute)}
+.inspector details[open]>summary::before{content:"▾ "}
+.inspector summary::-webkit-details-marker{display:none}
+.inspector dl{display:grid;grid-template-columns:auto 1fr;gap:.2rem 1rem;margin-top:.5rem;padding-left:1rem}
+.inspector dt{color:var(--mute)}
+.inspector dd{color:var(--fg);overflow-wrap:anywhere}
+.payload{font:400 .95rem/1.55 var(--sans);color:var(--fg);margin-top:.5rem;padding-left:1rem}
+.hex{margin-top:.6rem;padding:.7rem .8rem;background:#060c0a;border:1px solid var(--line);border-radius:6px;font:400 .68rem/1.6 var(--mono);color:var(--mute);overflow:auto;white-space:pre}
+.hex .hr{display:block;animation:rise .35s calc(var(--i)*28ms) both}
+.hex i{font-style:normal;color:var(--a)}
+.hex b{font-weight:400;color:var(--g)}
+.jump{margin-top:.9rem}
+
+/* ===== toolkit ===== */
+.hosts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem}
+.host{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.host h3{font:500 .72rem var(--mono);color:var(--mute);padding:.7rem .9rem;border-bottom:1px solid var(--line);background:var(--panel2);letter-spacing:.06em}
+.host h3 b{color:var(--g);font-weight:500}
+.svc{display:grid;grid-template-columns:3.9rem 2.6rem 1fr;gap:.6rem;padding:.55rem .9rem;border-bottom:1px solid var(--line);font:400 .78rem/1.4 var(--mono);opacity:0;transform:translateX(-8px);transition:opacity .35s,transform .35s;transition-delay:calc(var(--i)*70ms)}
+.svc:last-child{border-bottom:0}
+.host.on .svc{opacity:1;transform:none}
+.svc .port{color:var(--a)}.svc .st{color:var(--g)}
+.svc .nm{color:var(--fg);font-family:var(--sans);font-size:.92rem}
+.svc .nm small{display:block;font:400 .68rem var(--mono);color:var(--mute)}
+.scanbar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;margin-bottom:1rem;font:400 .75rem var(--mono);color:var(--mute)}
+
+/* ===== cases ===== */
+.tabs{display:flex;flex-wrap:wrap;gap:4px;position:relative;z-index:1;margin-bottom:-1px}
+.tab{font:500 .76rem var(--mono);padding:.65rem 1rem;border:1px solid var(--line);border-bottom:0;border-radius:8px 8px 0 0;background:var(--panel2);color:var(--mute);cursor:pointer;transition:color .2s,background .2s}
+.tab:hover{color:var(--fg)}
+.tab[aria-selected="true"]{background:var(--panel);color:var(--fg);box-shadow:inset 0 2px var(--g)}
+.casepanel{position:relative;border:1px solid var(--line);background:var(--panel);border-radius:0 10px 10px 10px;padding:clamp(1.2rem,3vw,2rem)}
+.stamp{position:absolute;top:1.1rem;right:1.1rem;transform:rotate(-7deg);border:2px solid var(--a);color:var(--a);font:700 .78rem var(--mono);letter-spacing:.2em;padding:.2rem .6rem;border-radius:3px;opacity:.85}
+.casepanel .no{font:500 .72rem var(--mono);color:var(--a);letter-spacing:.1em}
+.casepanel h3{font:700 clamp(1.3rem,3vw,1.8rem)/1.15 var(--sans);letter-spacing:-.02em;margin:.4rem 5rem .3rem 0}
+.casepanel .org{color:var(--mute)}
+.casepanel .when{font:400 .78rem var(--mono);color:var(--c);margin:.2rem 0 1.1rem}
+.casepanel ul{list-style:none;display:grid;gap:.6rem;max-width:62ch}
+.casepanel li{padding-left:1.4rem;position:relative}
+.casepanel li::before{content:">";position:absolute;left:0;color:var(--g);font-family:var(--mono)}
+
+/* ===== records ===== */
+.recs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:1rem}
+.rec{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.2rem}
+.rec .lab{font:500 .68rem var(--mono);color:var(--mute);letter-spacing:.1em;text-transform:uppercase}
+.rec .big{font:700 2.6rem/1 var(--sans);color:var(--g);letter-spacing:-.04em;margin:.6rem 0 .3rem}
+.rec p{color:var(--mute);font-size:.9rem}
+.rec p strong{color:var(--fg);font-weight:500}
+.bar{height:6px;border-radius:3px;background:var(--line);margin-top:.9rem;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--g);width:0;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.rec.wide{grid-column:1/-1}
+.rec.wide .big{font-size:1.7rem}
+.rec .pair{display:flex;gap:2rem;flex-wrap:wrap;margin-top:.5rem}
+.rec .pair div b{display:block;font:700 2.6rem/1 var(--sans);color:var(--g);letter-spacing:-.04em}
+.rec .pair div span{font:400 .72rem var(--mono);color:var(--mute)}
+
+/* ===== contact ===== */
+.contact{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:1.5rem;align-items:start}
+.mailform{padding:1.1rem;display:grid;gap:.9rem;font:400 .85rem var(--mono)}
+.mailform label{display:block;color:var(--g);margin-bottom:.3rem}
+.mailform input,.mailform textarea{width:100%;background:#060c0a;border:1px solid var(--line);border-radius:6px;padding:.65rem .75rem;font:400 .88rem var(--mono);color:var(--fg);resize:vertical}
+.mailform input:focus,.mailform textarea:focus{border-color:var(--g);outline:0;box-shadow:0 0 0 2px rgba(93,255,160,.25)}
+.mailform .sub{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center}
+.status{font:400 .75rem var(--mono);color:var(--a);min-height:1.2em}
+.links{list-style:none;display:grid;gap:.6rem}
+.links a{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.95rem 1rem;border:1px solid var(--line);border-radius:8px;background:var(--panel);text-decoration:none;transition:border-color .2s,transform .2s,background .2s}
+.links a:hover{border-color:var(--g);background:rgba(93,255,160,.05);transform:translateX(4px)}
+.links small{display:block;font:500 .65rem var(--mono);color:var(--mute);letter-spacing:.1em;text-transform:uppercase}
+.links span.v{font:500 .85rem var(--mono);overflow-wrap:anywhere}
+.links .ar{color:var(--g);font-family:var(--mono)}
+footer{position:relative;z-index:1;margin-left:var(--rail);padding:1.8rem clamp(1.25rem,4vw,4rem) 2.5rem;font:400 .72rem var(--mono);color:var(--mute);border-top:1px solid var(--line)}
+
+/* ===== reveal ===== */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .7s,transform .7s}
+.rv.on{opacity:1;transform:none}
+
+@keyframes blink{50%{opacity:0}}
+@keyframes slide{to{transform:translateX(-50%)}}
+@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes flick{0%{opacity:0}8%{opacity:1}12%{opacity:.3}18%{opacity:1}24%{opacity:.6}30%,100%{opacity:1}}
+
+@media (max-width:960px){
+  .cols{grid-template-columns:1fr}
+  .pwrap{border-right:0;border-bottom:1px solid var(--line)}
+  .plist{max-height:380px}
+  .contact{grid-template-columns:1fr}
+}
+@media (max-width:900px){
+  .rail{inset:0 0 auto 0;width:auto;flex-direction:row;align-items:center;gap:.6rem;padding:.35rem .6rem;border-right:0;border-bottom:1px solid var(--line)}
+  .rail p.cap,.session{display:none}
+  .brand{padding:0;white-space:nowrap;font-size:.75rem}
+  .rail ul{flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:0;margin:0}
+  .rail ul::-webkit-scrollbar{display:none}
+  .rail li a{border-left:0;border-bottom:2px solid transparent;white-space:nowrap;padding:.7rem .6rem;font-size:.74rem}
+  .rail li a[aria-current="true"]{border-bottom-color:var(--g)}
+  main,footer{margin-left:0}
+  main{padding-top:3.2rem}
+  html{scroll-padding-top:3.8rem}
+}
+@media (max-width:520px){
+  .phead,.row{grid-template-columns:1.8rem 4.4rem 1fr}
+  .stat dd{font-size:2rem}
+  .casepanel h3{margin-right:0;margin-top:2.2rem}
+  .stamp{top:.8rem;right:.8rem}
+  .svc{grid-template-columns:3.5rem 2.3rem 1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .rv,.svc{opacity:1!important;transform:none!important}
+  .track{transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="rail" aria-label="Primary">
+  <a class="brand" href="#whoami">sourav@sec:~<i aria-hidden="true"></i></a>
+  <p class="cap">open ports</p>
+  <ul id="nav">
+    <li><a href="#whoami"><span class="p">22</span>whoami</a></li>
+    <li><a href="#capture"><span class="p">80</span>capture</a></li>
+    <li><a href="#toolkit"><span class="p">443</span>toolkit</a></li>
+    <li><a href="#cases"><span class="p">445</span>casefiles</a></li>
+    <li><a href="#records"><span class="p">8080</span>records</a></li>
+    <li><a href="#contact"><span class="p">25</span>contact</a></li>
+  </ul>
+  <div class="session" aria-hidden="true">
+    SESSION <b>active</b><br>
+    LOCAL TIME <b id="clock">--:--</b><br>
+    LOC Ludhiana, PB
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ===== 22 / WHOAMI ===== -->
+<section id="whoami" class="hero" aria-labelledby="h-name">
+  <p class="kicker">// B.Tech CSE · Cybersecurity · Security Analyst Intern candidate</p>
+  <h1 id="h-name">Sourav<span>.</span></h1>
+  <p class="lede">I test web apps, read network traffic and write up <em>findings officers can act on.</em></p>
+
+  <div class="term" role="group" aria-label="Terminal introduction">
+    <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><span>sourav@lab: ~</span></div>
+    <div class="term-body">
+      <p><span class="prompt">sourav@lab:~$</span> <span class="cmd" data-type="cmd">whoami</span></p>
+      <span class="out" data-type="out">Sourav, B.Tech Computer Science student at GNA University, Phagwara. Cybersecurity focus.</span>
+      <p><span class="prompt">sourav@lab:~$</span> <span class="cmd" data-type="cmd">cat summary.txt</span></p>
+      <span class="out" data-type="out">3 cyber police internships: vulnerability assessment, web security testing, network analysis. Python security tools built. Findings documented for officers.</span>
+      <p><span class="prompt">sourav@lab:~$</span> <span class="cmd" data-type="cmd">cat target.txt</span></p>
+      <span class="out" data-type="out">SEEKING: Security Analyst Intern @ Cyvigilant Technologies</span>
+      <p><span class="prompt">sourav@lab:~$</span> <span class="caret" aria-hidden="true"></span></p>
+    </div>
+  </div>
+
+  <dl class="stats">
+    <div class="stat"><dt>Cyber police internships</dt><dd>3</dd></div>
+    <div class="stat"><dt>CTF-2026 · 100+ teams</dt><dd>1st</dd></div>
+    <div class="stat"><dt>CTF-2026 by HPTU · 500+ teams</dt><dd>6th</dd></div>
+    <div class="stat"><dt>B.Tech CGPA</dt><dd>8.15</dd></div>
+  </dl>
+
+  <div class="cta">
+    <a class="btn solid" href="#capture">▸ Open the capture</a>
+    <a class="btn" href="#contact">▸ Get in touch</a>
+  </div>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="track">
+      <span><b class="t-c">SYN</b> → :22 <b class="t-a">port scan detected</b></span>
+      <span><b class="t-g">ACK</b> ← :443 session established</span>
+      <span><b class="t-r">SYN-flood pattern</b> flagged</span>
+      <span>event logged → <b class="t-g">SQLite</b></span>
+      <span><b class="t-c">indicator</b> searched · <b class="t-a">alert raised</b></span>
+      <span>report generated → <b class="t-g">structured</b></span>
+      <span><b class="t-c">SYN</b> → :22 <b class="t-a">port scan detected</b></span>
+      <span><b class="t-g">ACK</b> ← :443 session established</span>
+      <span><b class="t-r">SYN-flood pattern</b> flagged</span>
+      <span>event logged → <b class="t-g">SQLite</b></span>
+      <span><b class="t-c">indicator</b> searched · <b class="t-a">alert raised</b></span>
+      <span>report generated → <b class="t-g">structured</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 80 / CAPTURE ===== -->
+<section id="capture" aria-labelledby="h-capture">
+  <div class="sec-head rv">
+    <span class="idx">80/tcp open</span>
+    <h2 id="h-capture">The capture: projects, wins &amp; proof</h2>
+    <p>Every line below is a packet. Filter the stream, pick one, and inspect it: frame details plus a hex dump of its payload.</p>
+  </div>
+  <div class="wire rv">
+    <div class="toolbar">
+      <label class="sr" for="flt">Display filter</label>
+      <input id="flt" type="search" placeholder="Apply a display filter … try: flask, scapy, ctf" autocomplete="off" spellcheck="false">
+      <div class="chips" role="group" aria-label="Filter by packet type" id="chips">
+        <button type="button" data-g="all" aria-pressed="true">all</button>
+        <button type="button" data-g="project" aria-pressed="false">projects</button>
+        <button type="button" data-g="win" aria-pressed="false">wins</button>
+        <button type="button" data-g="cert" aria-pressed="false">certs</button>
+        <button type="button" data-g="community" aria-pressed="false">community</button>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="pwrap">
+        <div class="phead" aria-hidden="true"><span>No.</span><span>Type</span><span>Info</span></div>
+        <ul class="plist" id="plist" aria-label="Packet list"></ul>
+        <div class="count" id="count" role="status" aria-live="polite"></div>
+      </div>
+      <aside class="inspector" id="inspector" aria-live="polite" aria-label="Packet inspector"></aside>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 443 / TOOLKIT ===== -->
+<section id="toolkit" aria-labelledby="h-tool">
+  <div class="sec-head rv">
+    <span class="idx">443/tcp open</span>
+    <h2 id="h-tool">Toolkit: a scan of what I run</h2>
+    <p>Four hosts, every service open. Notes show where each skill has been used.</p>
+  </div>
+  <div class="scanbar rv">
+    <span>$ scan --target sourav --all-services</span>
+    <button class="btn small" type="button" id="rescan">↻ rescan</button>
+  </div>
+  <div class="hosts" id="hosts"></div>
+</section>
+
+<!-- ===== 445 / CASEFILES ===== -->
+<section id="cases" aria-labelledby="h-cases">
+  <div class="sec-head rv">
+    <span class="idx">445/tcp open</span>
+    <h2 id="h-cases">Case files: three police cyber internships</h2>
+    <p>Hands-on work inside real cybercrime and security units. Open a file.</p>
+  </div>
+  <div class="rv">
+    <div class="tabs" role="tablist" aria-label="Internship case files" id="tabs"></div>
+    <div class="casepanel" id="casepanel" role="tabpanel" tabindex="0"></div>
+  </div>
+</section>
+
+<!-- ===== 8080 / RECORDS ===== -->
+<section id="records" aria-labelledby="h-rec">
+  <div class="sec-head rv">
+    <span class="idx">8080/tcp open</span>
+    <h2 id="h-rec">Records: education</h2>
+    <p>Still enrolled and still shipping.</p>
+  </div>
+  <div class="recs rv" id="recs">
+    <div class="rec wide">
+      <div class="lab">B.Tech · Computer Science and Engineering</div>
+      <div class="big">GNA University, Phagwara</div>
+      <p>Jun 2023 – Present</p>
+      <div class="pair">
+        <div><b>8.15</b><span>CGPA</span></div>
+        <div><b>8.7</b><span>Current SGPA</span></div>
+      </div>
+    </div>
+    <div class="rec">
+      <div class="lab">Class XII</div>
+      <div class="big">80%</div>
+      <p><strong>S.A.N Jain Public Senior Secondary School</strong>, Ludhiana</p>
+      <div class="bar" role="img" aria-label="80 percent"><i data-w="80"></i></div>
+    </div>
+    <div class="rec">
+      <div class="lab">Class X</div>
+      <div class="big">92%</div>
+      <p><strong>Durgeshwari Bal Vidya Mandir</strong>, Ludhiana</p>
+      <div class="bar" role="img" aria-label="92 percent"><i data-w="92"></i></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 25 / CONTACT ===== -->
+<section id="contact" aria-labelledby="h-contact">
+  <div class="sec-head rv">
+    <span class="idx">25/smtp open</span>
+    <h2 id="h-contact">Send me a message</h2>
+    <p>Hiring for a Security Analyst Intern role, or want to talk security? I'd like to hear from you.</p>
+  </div>
+  <div class="contact rv">
+    <div class="term">
+      <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><span>mail --to souravk0704@gmail.com</span></div>
+      <form class="mailform" id="mail" novalidate>
+        <div>
+          <label for="f-name">$ from --name</label>
+          <input id="f-name" name="name" type="text" autocomplete="name" placeholder="Your name" required>
+        </div>
+        <div>
+          <label for="f-msg">$ message --body</label>
+          <textarea id="f-msg" name="msg" rows="5" placeholder="Hi Sourav, …" required></textarea>
+        </div>
+        <div class="sub">
+          <button class="btn solid" type="submit">Send ↵</button>
+          <span class="status" id="mail-status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </div>
+    <ul class="links">
+      <li><a href="mailto:souravk0704@gmail.com"><div><small>Email</small><span class="v">souravk0704@gmail.com</span></div><span class="ar" aria-hidden="true">→</span></a></li>
+      <li><a href="tel:+918198092936"><div><small>Phone</small><span class="v">8198092936</span></div><span class="ar" aria-hidden="true">→</span></a></li>
+      <li><a href="https://linkedin.com/in/sourav-k-28725b373" target="_blank" rel="noopener noreferrer"><div><small>LinkedIn</small><span class="v">sourav-k-28725b373</span></div><span class="ar" aria-hidden="true">↗</span></a></li>
+      <li><a href="https://github.com/Sourav0" target="_blank" rel="noopener noreferrer"><div><small>GitHub</small><span class="v">Sourav0</span></div><span class="ar" aria-hidden="true">↗</span></a></li>
+      <li><button class="btn small" type="button" id="copy">⧉ Copy email address</button> <span class="status" id="copy-status" role="status" aria-live="polite"></span></li>
+    </ul>
+  </div>
+</section>
+
+</main>
+<footer>© 2026 Sourav · Ludhiana, Punjab · built as a console, because that's where I work.</footer>
+
+<script>
+(() => {
+  'use strict';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  /* ---------- clock ---------- */
+  const clock = $('#clock');
+  const tick = () => { clock.textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); };
+  tick(); setInterval(tick, 30000);
+
+  /* ---------- hero typing ---------- */
+  (async function typeIntro() {
+    if (reduce) return;
+    const nodes = $$('[data-type]');
+    const saved = nodes.map(n => n.textContent);
+    nodes.forEach(n => n.textContent = '');
+    await sleep(500);
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      n.classList.add('typing');
+      const delay = n.dataset.type === 'cmd' ? 34 : 9;
+      for (const ch of saved[i]) { n.textContent += ch; await sleep(delay); }
+      n.classList.remove('typing');
+      await sleep(n.dataset.type === 'cmd' ? 220 : 320);
+    }
+  })();
+
+  /* ---------- packet data ---------- */
+  const P = [
+    {id:1, g:'project', layer:'PROJECT', title:'CyberRecon: security automation platform', stack:'Python · Flask · JavaScript · REST API · Linux',
+      frame:[['Type','Project'],['Stack','Python, Flask, JavaScript, REST API, Linux'],['Does','Centralises recon, scanning & assessment'],['Output','Structured reports for documentation']],
+      body:'A security automation platform that centralises reconnaissance, scanning and assessment tasks. It automates security workflows and generates structured reports for documentation.'},
+    {id:2, g:'project', layer:'PROJECT', title:'AI Cybersecurity Packet Sniffer & IDS Dashboard', stack:'Python · Scapy · Streamlit · SQLite',
+      frame:[['Type','Project'],['Stack','Python, Scapy, Streamlit, SQLite'],['Detects','Port scans, SYN-flood patterns'],['Storage','SQLite event log'],['Use','Analysis, investigation, incident tracking']],
+      body:'Detects suspicious network activity such as port scans and SYN-flood patterns, and logs events in SQLite for analysis, investigation and incident tracking.'},
+    {id:3, g:'project', layer:'PROJECT', title:'DarkPulse-AI: threat intelligence platform', stack:'Python · Flask · PostgreSQL · Docker · Gemini API',
+      frame:[['Type','Project (in progress)'],['Scope','B.Tech major project'],['Stack','Python, Flask, PostgreSQL, Docker, Gemini API'],['Features','Indicator search, alerts, investigation history']],
+      body:'My B.Tech major project, currently in progress: a threat intelligence platform with indicator search, alerts and investigation history.'},
+    {id:4, g:'project', layer:'PROJECT', title:'Cybercrime complaint management platform', stack:'JavaScript · built at Rajasthan Police HQ',
+      frame:[['Type','Project'],['Built at','Rajasthan Police Headquarters, Jaipur'],['Stack','JavaScript'],['Users','Officers'],['Does','Manage and track cybercrime cases']],
+      body:'Built during my Cyber Crime Branch internship: a JavaScript platform that lets officers manage and track cybercrime cases.', caseId:'rajasthan'},
+    {id:5, g:'win', layer:'WIN', title:'1st position: CTF-2026', stack:'Field of 100+ teams',
+      frame:[['Type','Achievement'],['Event','CTF-2026'],['Result','1st position'],['Field','100+ teams']],
+      body:'Finished first among 100+ teams at CTF-2026.'},
+    {id:6, g:'win', layer:'WIN', title:'6th position: CTF-2026 by HPTU', stack:'Field of 500+ teams',
+      frame:[['Type','Achievement'],['Event','CTF-2026 by HPTU'],['Result','6th position'],['Field','500+ teams']],
+      body:'Placed sixth among 500+ teams at CTF-2026 by HPTU.'},
+    {id:7, g:'community', layer:'ROLE', title:'Campus Ambassador: BECon 2026', stack:'IIT Delhi',
+      frame:[['Type','Role'],['Event','BECon 2026'],['Institution','IIT Delhi']],
+      body:'Campus Ambassador for BECon 2026 at IIT Delhi.'},
+    {id:8, g:'community', layer:'TEACH', title:'Cyber Security Awareness Lecturer', stack:'Government Schools, Hoshiarpur · volunteer',
+      frame:[['Type','Volunteer experience'],['Where','Government Schools, Hoshiarpur'],['Topic','Cyber security awareness']],
+      body:'Volunteer lecturer on cyber security awareness in government schools in Hoshiarpur.'},
+    {id:9, g:'cert', layer:'CERT', title:'Ethical Hacker: Cisco', stack:'Certification',
+      frame:[['Type','Certification'],['Issuer','Cisco'],['Title','Ethical Hacker']],
+      body:'Certification earned: Ethical Hacker, issued by Cisco.'},
+    {id:10, g:'cert', layer:'CERT', title:'Cybersecurity Foundation: Palo Alto Networks', stack:'Certification',
+      frame:[['Type','Certification'],['Issuer','Palo Alto Networks'],['Title','Cybersecurity Foundation']],
+      body:'Certification earned: Cybersecurity Foundation, issued by Palo Alto Networks.'},
+    {id:11, g:'cert', layer:'CERT', title:'Python: LinkedIn', stack:'Certification',
+      frame:[['Type','Certification'],['Issuer','LinkedIn'],['Title','Python']],
+      body:'Certification earned: Python, issued by LinkedIn.'}
+  ];
+
+  const plist = $('#plist'), flt = $('#flt'), count = $('#count'), ins = $('#inspector'), chips = $('#chips');
+  let group = 'all', sel = 1;
+
+  function hexdump(str) {
+    const b = Array.from(new TextEncoder().encode(str)).slice(0, 128);
+    const rows = [];
+    for (let i = 0; i < b.length; i += 8) {
+      const c = b.slice(i, i + 8);
+      const hex = c.map(x => x.toString(16).padStart(2, '0')).join(' ');
+      const asc = c.map(x => (x >= 32 && x < 127) ? String.fromCharCode(x) : '.').join('');
+      rows.push('<span class="hr" style="--i:' + rows.length + '"><i>' + i.toString(16).padStart(4, '0') + '</i>  ' + hex.padEnd(23) + '  <b>' + esc(asc) + '</b></span>');
+    }
+    return rows.join('');
+  }
+
+  function renderList() {
+    const term = flt.value.trim().toLowerCase();
+    const vis = P.filter(p => (group === 'all' || p.g === group) &&
+      (!term || (p.title + ' ' + p.stack + ' ' + p.layer + ' ' + p.g + ' ' + p.body).toLowerCase().includes(term)));
+    plist.innerHTML = vis.length ? vis.map(p =>
+      '<li><button type="button" class="row" data-id="' + p.id + '" data-g="' + p.g + '" aria-pressed="' + (p.id === sel) + '">' +
+      '<span class="no">' + p.id + '</span><span class="lay">' + p.layer + '</span>' +
+      '<span class="info"><strong>' + esc(p.title) + '</strong><small>' + esc(p.stack) + '</small></span></button></li>'
+    ).join('') : '<li class="empty">No packets match this filter.</li>';
+    count.textContent = 'Displaying ' + vis.length + ' of ' + P.length + ' packets';
+  }
+
+  function renderInspector() {
+    const p = P.find(x => x.id === sel); if (!p) return;
+    ins.innerHTML =
+      '<p class="ins-k">Frame ' + p.id + ' · ' + p.layer + '</p>' +
+      '<h3>' + esc(p.title) + '</h3>' +
+      '<details open><summary>Frame ' + p.id + ': ' + p.layer.toLowerCase() + ' / ' + p.g + '</summary><dl>' +
+        p.frame.map(f => '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>').join('') + '</dl></details>' +
+      '<details open><summary>Payload</summary><p class="payload">' + esc(p.body) + '</p></details>' +
+      '<details open><summary>Hex dump</summary><pre class="hex" aria-hidden="true">' + hexdump(p.title + ' | ' + p.stack) + '</pre></details>' +
+      (p.caseId ? '<button type="button" class="btn small jump" data-case="' + p.caseId + '">▸ Open the case file</button>' : '');
+  }
+
+  function select(id) {
+    sel = id;
+    $$('.row', plist).forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.id === id)));
+    renderInspector();
+  }
+
+  plist.addEventListener('click', e => {
+    const b = e.target.closest('.row'); if (b) select(+b.dataset.id);
+  });
+  plist.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const rows = $$('.row', plist), i = rows.indexOf(document.activeElement);
+    if (i < 0) return;
+    e.preventDefault();
+    const n = rows[Math.max(0, Math.min(rows.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))];
+    n.focus(); select(+n.dataset.id);
+  });
+  flt.addEventListener('input', renderList);
+  chips.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    group = b.dataset.g;
+    $$('button', chips).forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    renderList();
+  });
+  ins.addEventListener('click', e => {
+    const b = e.target.closest('[data-case]'); if (b) openCase(b.dataset.case, true);
+  });
+
+  function openPacket(id) {
+    group = 'all'; flt.value = '';
+    $$('button', chips).forEach(x => x.setAttribute('aria-pressed', String(x.dataset.g === 'all')));
+    renderList(); select(id);
+    $('#capture').scrollIntoView({behavior: reduce ? 'auto' : 'smooth'});
+  }
+
+  renderList(); renderInspector();
+
+  /* ---------- toolkit ---------- */
+  const HOSTS = [
+    {name:'security-testing', items:[
+      ['Vulnerability Assessment','GPCSSI2026 · police internships'],
+      ['Web Application Security Testing','GPCSSI2026'],
+      ['Security Reporting','findings documented for officers'],
+      ['OSINT','APCSIP2025'],
+      ['Digital Forensics','APCSIP2025']]},
+    {name:'tools', items:[
+      ['Burp Suite','web security testing'],
+      ['Nmap','port scanning & network security analysis'],
+      ['Wireshark','network traffic analysis'],
+      ['Scapy','packet sniffer & IDS dashboard'],
+      ['Autopsy','digital forensics'],
+      ['FTK Imager','digital forensics']]},
+    {name:'networking-systems', items:[
+      ['TCP/IP',''],
+      ['Network Traffic Analysis','Wireshark · Scapy'],
+      ['Port Scanning','Nmap'],
+      ['Linux','APCSIP2025 · CyberRecon'],
+      ['Command Line','']]},
+    {name:'programming', items:[
+      ['Python','CyberRecon · IDS · DarkPulse-AI'],
+      ['JavaScript','police complaint platform'],
+      ['SQL','SQLite · PostgreSQL'],
+      ['Flask','CyberRecon · DarkPulse-AI'],
+      ['REST API','CyberRecon'],
+      ['HTML',''],['CSS',''],['C/C++',''],['Git/GitHub','']]}
+  ];
+  let portNo = 0;
+  const hostsEl = $('#hosts');
+  hostsEl.innerHTML = HOSTS.map(h =>
+    '<article class="host"><h3>HOST <b>' + h.name + '</b></h3>' +
+    h.items.map((s, i) => {
+      portNo++;
+      return '<div class="svc" style="--i:' + i + '"><span class="port">' + String(portNo).padStart(2, '0') + '/tcp</span><span class="st">open</span>' +
+        '<span class="nm">' + esc(s[0]) + (s[1] ? '<small>' + esc(s[1]) + '</small>' : '') + '</span></div>';
+    }).join('') + '</article>').join('');
+
+  const hostEls = $$('.host', hostsEl);
+  if (reduce) hostEls.forEach(h => h.classList.add('on'));
+  $('#rescan').addEventListener('click', () => {
+    if (reduce) return;
+    hostEls.forEach(h => h.classList.remove('on'));
+    void hostsEl.offsetWidth;
+    requestAnimationFrame(() => requestAnimationFrame(() => hostEls.forEach(h => h.classList.add('on'))));
+  });
+
+  /* ---------- case files ---------- */
+  const CASES = [
+    {id:'rajasthan', no:'CASE 01', tab:'Rajasthan Police HQ', role:'Cyber Crime Branch Intern', org:'Rajasthan Police Headquarters, Jaipur', when:'Jun 2026 – Aug 2026',
+      bullets:['Supported cyber investigations through incident documentation and security-related case analysis.','Built a JavaScript complaint management platform for officers to manage and track cybercrime cases.'], packet:4},
+    {id:'gpcssi', no:'CASE 02', tab:'GPCSSI2026', role:'Cyber Security Summer Intern', org:'GPCSSI2026, Gurugram', when:'Jun 2026',
+      bullets:['Performed web security testing, vulnerability assessment and network security analysis using Burp Suite, Wireshark and Nmap.']},
+    {id:'apcsip', no:'CASE 03', tab:'APCSIP2025', role:'Cyber Security Intern', org:'APCSIP2025, Amroha', when:'Jun 2025 – Jul 2025',
+      bullets:['Assisted in cyber investigations, OSINT, network analysis and digital forensics using Linux-based tools.']}
+  ];
+  const tabs = $('#tabs'), panel = $('#casepanel');
+  let curCase = CASES[0].id;
+  tabs.innerHTML = CASES.map((c, i) =>
+    '<button type="button" class="tab" role="tab" id="tab-' + c.id + '" aria-controls="casepanel" data-id="' + c.id + '" aria-selected="' + (i === 0) + '" tabindex="' + (i === 0 ? 0 : -1) + '">' + c.no.replace('CASE ', '') + ' · ' + esc(c.tab) + '</button>').join('');
+
+  function renderCase() {
+    const c = CASES.find(x => x.id === curCase);
+    panel.setAttribute('aria-labelledby', 'tab-' + c.id);
+    panel.innerHTML =
+      '<span class="stamp" aria-hidden="true">FILED</span>' +
+      '<div class="no">' + c.no + '</div><h3>' + esc(c.role) + '</h3>' +
+      '<p class="org">' + esc(c.org) + '</p><p class="when">' + esc(c.when) + '</p>' +
+      '<ul>' + c.bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>' +
+      (c.packet ? '<p style="margin-top:1.2rem"><button type="button" class="btn small" data-packet="' + c.packet + '">▸ Inspect the platform in the capture</button></p>' : '');
+    $$('.tab', tabs).forEach(t => { const on = t.dataset.id === curCase; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+  }
+  function openCase(id, scroll) {
+    curCase = id; renderCase();
+    if (scroll) $('#cases').scrollIntoView({behavior: reduce ? 'auto' : 'smooth'});
+  }
+  tabs.addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) openCase(t.dataset.id); });
+  tabs.addEventListener('keydown', e => {
+    const list = $$('.tab', tabs), i = list.indexOf(document.activeElement);
+    if (i < 0) return;
+    let n = -1;
+    if (e.key === 'ArrowRight') n = (i + 1) % list.length;
+    else if (e.key === 'ArrowLeft') n = (i - 1 + list.length) % list.length;
+    else if (e.key === 'Home') n = 0;
+    else if (e.key === 'End') n = list.length - 1;
+    if (n < 0) return;
+    e.preventDefault(); list[n].focus(); openCase(list[n].dataset.id);
+  });
+  panel.addEventListener('click', e => { const b = e.target.closest('[data-packet]'); if (b) openPacket(+b.dataset.packet); });
+  renderCase();
+
+  /* ---------- records bars ---------- */
+  const bars = $$('.bar i');
+  if (reduce) bars.forEach(b => b.style.width = b.dataset.w + '%');
+
+  /* ---------- reveal + nav spy ---------- */
+  if ('IntersectionObserver' in window) {
+    const rvIO = new IntersectionObserver(es => es.forEach(en => {
+      if (!en.isIntersecting) return;
+      en.target.classList.add('on');
+      if (en.target.id === 'hosts') $$('.host', en.target).forEach(h => h.classList.add('on'));
+      rvIO.unobserve(en.target);
+    }), {threshold: .12});
+    $$('.rv').forEach(el => rvIO.observe(el));
+    const hostIO = new IntersectionObserver(es => es.forEach(en => {
+      if (en.isIntersecting) { en.target.classList.add('on'); hostIO.unobserve(en.target); }
+    }), {threshold: .15});
+    hostEls.forEach(h => hostIO.observe(h));
+    const barIO = new IntersectionObserver(es => es.forEach(en => {
+      if (en.isIntersecting) { $$('.bar i', en.target).forEach(b => b.style.width = b.dataset.w + '%'); barIO.unobserve(en.target); }
+    }), {threshold: .3});
+    barIO.observe($('#recs'));
+
+    const links = $$('#nav a');
+    const spy = new IntersectionObserver(es => es.forEach(en => {
+      if (!en.isIntersecting) return;
+      links.forEach(a => a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + en.target.id)));
+    }), {rootMargin: '-35% 0px -55% 0px'});
+    $$('main section').forEach(s => spy.observe(s));
+  } else {
+    $$('.rv').forEach(el => el.classList.add('on'));
+    hostEls.forEach(h => h.classList.add('on'));
+    bars.forEach(b => b.style.width = b.dataset.w + '%');
+  }
+
+  /* ---------- contact ---------- */
+  const EMAIL = 'souravk0704@gmail.com';
+  const form = $('#mail'), status = $('#mail-status');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('#f-name').value.trim(), msg = $('#f-msg').value.trim();
+    if (!name || !msg) { status.textContent = '! name and message are required'; return; }
+    const subject = 'Portfolio inquiry from ' + name;
+    const body = msg + '\n\n— ' + name;
+    status.textContent = '→ opening your mail app…';
+    window.location.href = 'mailto:' + EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  });
+  $('#copy').addEventListener('click', async () => {
+    const out = $('#copy-status');
+    try { await navigator.clipboard.writeText(EMAIL); out.textContent = 'copied ✓'; }
+    catch (_) {
+      const t = document.createElement('textarea'); t.value = EMAIL; document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); out.textContent = 'copied ✓'; } catch (__) { out.textContent = EMAIL; }
+      t.remove();
+    }
+    setTimeout(() => out.textContent = '', 2500);
+  });
+})();
+</script>
+</body>
+</html>
